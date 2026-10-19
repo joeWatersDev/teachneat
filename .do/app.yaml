@@ -1,0 +1,242 @@
+# DigitalOcean App Platform spec for Teachneat (Phase 2, Step 6d).
+#
+# Provider and region were settled in Step 6b: App Platform plus Managed
+# Postgres in Toronto (tor1), because Nova Scotia's PIIDPA binds public bodies
+# and their service providers to in-Canada storage until 2027-04-01, and the
+# privacy policy now states that the database is in Toronto.
+#
+# One app, two components, on purpose. The client calls the API at a relative
+# `/api`, so the browser must see one origin — that is what makes the session
+# cookie a first-party cookie and is why there is no CORS configuration to get
+# wrong. `preserve_path_prefix` is the load-bearing line: App Platform strips a
+# route's prefix by default, and the Express app mounts its routers at `/api`,
+# so stripping it would 404 every endpoint.
+#
+# Apply with:
+#   doctl apps create --spec .do/app.yaml
+#   doctl apps update <app-id> --spec .do/app.yaml
+#
+# Secrets are NOT in this file. Values written as ${SECRET} are set once in the
+# App Platform console (or with `doctl apps update`) as encrypted variables and
+# are never committed. The list of them is in .do/README.md.
+name: teachneat
+region: tor
+# Only the canonical apex is declared here. `www` and the whole of teachneat.app
+# are redirected to it at Cloudflare rather than being served, so they never
+# reach App Platform and do not need certificates from it. One redirect
+# mechanism for every alias, and no redirect logic in the app.
+#
+# There is deliberately no `zone:` field. That field asks App Platform to manage
+# the DNS records itself, which requires the domain's nameservers to point at
+# DigitalOcean. Cloudflare Registrar requires its own nameservers as a condition
+# of registration, so the record is created by hand in Cloudflare instead. See
+# the DNS notes in the deployment steps.
+domains:
+  - domain: teachneat.com
+    type: PRIMARY
+
+databases:
+  # Managed Postgres, Basic 1 GiB. Named `db` so the components can reference
+  # its connection string as ${db.DATABASE_URL} rather than copying a password
+  # into an environment variable.
+  - name: db
+    engine: PG
+    version: "17"
+    production: true
+    cluster_name: teachneat-db
+
+services:
+  - name: server
+    environment_slug: node-js
+    instance_size_slug: apps-s-1vcpu-1gb
+    # One instance, deliberately. The read-side working set holds student data
+    # in per-instance RAM and there is no shared cache by design (Step 6a), so
+    # scaling out means sticky sessions, not another instance added casually.
+    instance_count: 1
+    http_port: 3001
+    source_dir: server
+    github:
+      repo: joeWatersDev/Teacher_Toolkit
+      branch: main
+      # False on purpose. CI deploys instead, after the checks pass; see the
+      # note at the top of .github/workflows/ci.yml. Turning this back on
+      # restores build-on-push and silently un-gates every check.
+      deploy_on_push: false
+    # --include=dev is load-bearing. npm treats NODE_ENV=production as
+    # --omit=dev, and the build needs typescript (and vite, on the client),
+    # both devDependencies. Without this flag the build fails with
+    # "tsc: not found" the moment anything puts NODE_ENV in the build
+    # environment -- which is what RUN_AND_BUILD_TIME scoping used to do.
+    build_command: npm ci --include=dev && npm run build
+    run_command: npm start
+    health_check:
+      http_path: /api/health
+      initial_delay_seconds: 15
+      period_seconds: 30
+      failure_threshold: 3
+    routes:
+      - path: /api
+        preserve_path_prefix: true
+    envs:
+      - key: NODE_ENV
+        scope: RUN_TIME
+        value: production
+      # Working-set budget in MB. Measured against this instance size; raising
+      # the instance means raising this too, or the extra memory goes unused.
+      # See server/src/config/cache.ts and scripts/measure-working-set.mjs.
+      - key: CACHE_MAX_MB
+        scope: RUN_TIME
+        value: "256"
+      - key: PORT
+        scope: RUN_TIME
+        value: "3001"
+      # The CA that signed the managed database's certificate. A public
+      # certificate, so it is a plain value rather than a secret. `pg` reads
+      # sslmode=require as verify-full, and DigitalOcean's CA is not in Node's
+      # trust store, so without this every query fails with
+      # "self-signed certificate in certificate chain". Line breaks are written
+      # as literal \n and restored in config/env.ts.
+      #
+      # Cluster-specific: re-export with `doctl databases get-ca <cluster-id>`
+      # if the cluster is ever rebuilt.
+      - key: DATABASE_CA_CERT
+        scope: RUN_TIME
+        value: '-----BEGIN CERTIFICATE-----\nMIIERDCCAqygAwIBAgIUTZwGO1rKrdP0QxVvcfv99aFfyKwwDQYJKoZIhvcNAQEM\nBQAwOjE4MDYGA1UEAwwvNjZmZDIwNWEtZDc2Zi00MWNhLTk3OTAtM2RjMzQyODli\nYTA1IFByb2plY3QgQ0EwHhcNMjYwODI0MjAxMTU0WhcNMzYwODIxMjAxMTU0WjA6\nMTgwNgYDVQQDDC82NmZkMjA1YS1kNzZmLTQxY2EtOTc5MC0zZGMzNDI4OWJhMDUg\nUHJvamVjdCBDQTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAK64Be8G\nijVcq/dfuvWZOqRfvqBj2ADWBRVIa9gM2gtLY2RXoKxWbyTOHzVeH8qdab4pX7Cp\nWQB8fwvjoO0wkBJi1IwTsdHjcYsihPbZF2LBm361IXJq71P7+6wWhNg/EeVN3q2v\n2bxtL45SEjjEYSCdE2vygADN4X2ZNQBg65y1I/dVUz7/o0f2W0Xx8S9MJ2bHhKFc\nF9c13iVJhVLKnPzYEweM8eUG8oD9NWptYHkvKG1rm/ImbvEoT2Z5xzQGw9CDeq32\n3UxSg1JKtOupWhApCtOepFHCTsPoFeN9gNYFyHWgggUH7AueSlKKTCQNRWRT6KEa\nWunLb/aXehqsiGTJ6as8eU0zWI2t0FLJczuQ1Njz71yLzlXHSlxXovukS3zXCiOY\n4KJb56jo2FMSTCVa5/V5t/26uR3WojrZylXkrOFlsTdY2xFeafrdHYpPo5DUy9P2\nR8VBTzkWzPeyV+vU9wh0gA5OedxzaybtAcEP4mSFGfR+h8aFkCGAGDdWFwIDAQAB\no0IwQDAdBgNVHQ4EFgQUCvrploCkP1lmiJVu4SKrUr5iTDswEgYDVR0TAQH/BAgw\nBgEB/wIBADALBgNVHQ8EBAMCAQYwDQYJKoZIhvcNAQEMBQADggGBAA37cYrmaqrj\n1MD4XEROJ+GtyPEc66L4zm30yAMBYX3SijSsm32LapEXgxi88VNMbytuEoMHBxjW\nmfrCj7dfJOjlvPsyaMFuMe8dY52BCc+kKMOsDPdnbCxcTY0SF0H/u4KWm47HhMsm\nbgAu3RIAiUyyZiVhQ35829iNQS71ei6Kkb6c1dqLyqnQt0CBiege3cjivCQzDUI/\nvscbzmZt9/rPhKUTAvZyj79q7X+9UV2VmB3zHCex7+3dAyjir49qYOrpnJoQErGb\nGqe3e8t5ERIL51l0HGYAo7Tz2VUgxoC/2YL8bwzfyDJjprfr4uPwhaHy8XvDnICA\npHwAWn96o8gImjmN9s3+l/fyWGRzkEzCKHLJhJVxoTqDvqSjBCRI2WUxxk6ZVJMf\n6l7uRygLIkzUeyRjlP9ZXUQUXyHGrr0pVQrfLKXjoORzHtNJdibSMM1st8eMCDSo\nJyG8RyddL742bYrbfbM7mzeuPXZjFgR4/Mc9mBRDc03rU5CaygHH0g==\n-----END CERTIFICATE-----'
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db.DATABASE_URL}
+        type: SECRET
+      # Same origin as the static site, so this is the app's own domain rather
+      # than a separate client host.
+      - key: CLIENT_ORIGIN
+        scope: RUN_TIME
+        value: https://teachneat.com
+      - key: GOOGLE_REDIRECT_URI
+        scope: RUN_TIME
+        value: https://teachneat.com/api/auth/google/callback
+      - key: GOOGLE_CLIENT_ID
+        scope: RUN_TIME
+        value: ${GOOGLE_CLIENT_ID}
+        type: SECRET
+      - key: GOOGLE_CLIENT_SECRET
+        scope: RUN_TIME
+        value: ${GOOGLE_CLIENT_SECRET}
+        type: SECRET
+      - key: SESSION_SECRET
+        scope: RUN_TIME
+        value: ${SESSION_SECRET}
+        type: SECRET
+      # Token encryption. TOKEN_KEY_WRAPPED is the KMS-wrapped data key and is
+      # inert without KMS access, but it is marked SECRET anyway — there is no
+      # reason for it to be readable in a spec diff. TOKEN_ENCRYPTION_KEY stays
+      # only until no pre-cutover rows remain; see server/src/services/tokenKey.ts.
+      - key: TOKEN_KMS_KEY_NAME
+        scope: RUN_TIME
+        value: ${TOKEN_KMS_KEY_NAME}
+      - key: TOKEN_KMS_CREDENTIALS
+        scope: RUN_TIME
+        value: ${TOKEN_KMS_CREDENTIALS}
+        type: SECRET
+      - key: TOKEN_KEY_WRAPPED
+        scope: RUN_TIME
+        value: ${TOKEN_KEY_WRAPPED}
+        type: SECRET
+      - key: TOKEN_KEY_ID
+        scope: RUN_TIME
+        value: k1
+      - key: TOKEN_ENCRYPTION_KEY
+        scope: RUN_TIME
+        value: ${TOKEN_ENCRYPTION_KEY}
+        type: SECRET
+      - key: STRIPE_SECRET_KEY
+        scope: RUN_TIME
+        value: ${STRIPE_SECRET_KEY}
+        type: SECRET
+      - key: STRIPE_WEBHOOK_SECRET
+        scope: RUN_TIME
+        value: ${STRIPE_WEBHOOK_SECRET}
+        type: SECRET
+      - key: STRIPE_PRICE_MONTHLY
+        scope: RUN_TIME
+        value: ${STRIPE_PRICE_MONTHLY}
+      - key: STRIPE_PRICE_ANNUAL
+        scope: RUN_TIME
+        value: ${STRIPE_PRICE_ANNUAL}
+      - key: RESEND_API_KEY
+        scope: RUN_TIME
+        value: ${RESEND_API_KEY}
+        type: SECRET
+      - key: LIFECYCLE_EMAIL_FROM
+        scope: RUN_TIME
+        value: ${LIFECYCLE_EMAIL_FROM}
+      # Where unhandled server errors are mailed (Step 6d). An operator address,
+      # never a teacher-facing one. Empty disables the alert but not the log.
+      - key: OPERATOR_ALERT_EMAIL
+        scope: RUN_TIME
+        value: ${OPERATOR_ALERT_EMAIL}
+        type: SECRET
+      - key: SUPPORT_ADMIN_GOOGLE_SUBS
+        scope: RUN_TIME
+        value: ${SUPPORT_ADMIN_GOOGLE_SUBS}
+        type: SECRET
+      # How many proxies sit in front of the app, for Express's `trust proxy`.
+      # Without it `req.ip` is DigitalOcean's ingress rather than the caller, so
+      # every IP-keyed rate limiter collapses into one bucket shared by all
+      # traffic -- including the public contact form's, which is the only way in
+      # for a teacher whose board has blocked the OAuth app.
+      #
+      # MEASURED, NOT GUESSED. Too low leaves the bug; too high lets a caller
+      # forge X-Forwarded-For and choose their own bucket, which is worse
+      # because it looks like it works.
+      #
+      # Measured 2026-08-26 through GET /api/internal/forwarding (operator-gated),
+      # twice: once normally, and once with a forged X-Forwarded-For, which is
+      # the reading that settles it. Express walks from the socket outward along
+      # the header, right to left, and returns the entry at this index:
+      #
+      #   0  ::ffff:10.244.x.x   DigitalOcean's internal router
+      #   1  162.158.x.x         Cloudflare edge (their 162.158.0.0/15)
+      #   2  the caller          <- what every rate limiter should key on
+      #   3  whatever the caller put in the header themselves
+      #
+      # So 2. Both hostnames (the apex and the *.ondigitalocean.app default
+      # ingress) sit behind the same Cloudflare layer, so there is no shorter
+      # chain to bypass through. Which Cloudflare edge answers varies; that there
+      # is exactly one of them does not.
+      #
+      # Note what the forged reading is for. In the clean reading the header held
+      # two entries, so counting entries happens to give the right answer; under
+      # the forged request it held three. The count that is actually fixed is the
+      # number of infrastructure hops that append to the header, and it is only
+      # visible by comparing the two. Re-measure the same way if the platform
+      # ever moves the chain -- a limiter refusing the wrong people is the
+      # symptom to watch for.
+      - key: TRUST_PROXY_HOPS
+        scope: RUN_TIME
+        value: "2"
+      # DEV_TOOLS_GOOGLE_SUBS is deliberately absent. The plan toggle's guard is
+      # the allowlist *and* a non-production check, and this is production; an
+      # empty allowlist keeps both halves false rather than one.
+
+static_sites:
+  - name: client
+    source_dir: client
+    github:
+      repo: joeWatersDev/Teacher_Toolkit
+      branch: main
+      # False on purpose. CI deploys instead, after the checks pass; see the
+      # note at the top of .github/workflows/ci.yml. Turning this back on
+      # restores build-on-push and silently un-gates every check.
+      deploy_on_push: false
+    # --include=dev is load-bearing. npm treats NODE_ENV=production as
+    # --omit=dev, and the build needs typescript (and vite, on the client),
+    # both devDependencies. Without this flag the build fails with
+    # "tsc: not found" the moment anything puts NODE_ENV in the build
+    # environment -- which is what RUN_AND_BUILD_TIME scoping used to do.
+    build_command: npm ci --include=dev && npm run build
+    output_dir: dist
+    # Single-page app: every unmatched path is the React router's to resolve,
+    # so a deep link like /account must serve index.html rather than 404.
+    catchall_document: index.html
+    routes:
+      - path: /

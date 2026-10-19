@@ -1,0 +1,49 @@
+# Node.js
+node_modules/
+dist/
+dist-ssr/
+# TypeScript incremental build state (written by `tsc -b`).
+*.tsbuildinfo
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Server local data (encrypted tokens, etc.)
+server/.data/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Design references. The Gmail and Drive screenshots are captures of a real
+# account, so the folder's contents are excluded by default and anything safe to
+# publish is re-added by name. `design/*` rather than `design/`, because git
+# cannot re-include a file whose parent directory is itself excluded.
+design/*
+!design/README.md
+!design/landing-page-mockup.html
+# Brand assets (Step 6g). Generated geometry and type — no account data of any
+# kind, and the whole point of them is to be used, so the folder is re-added
+# whole rather than file by file.
+!design/brand/
+
+# Claude Code local artifacts
+.claude/settings.local.json
+.claude/worktrees/
+
+# Surveys and planning
+surveys/

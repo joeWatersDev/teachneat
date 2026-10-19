@@ -1,0 +1,466 @@
+<title>Teachneat Case Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Teachneat: from teacher discovery research to a live, Google-verified product, a structured user test, and an evidence-based decision to stop.">
+<style>
+/* Layout: one reading column (~68ch) on the product's warm canvas; charts and the screenshot gallery break out to a wider measure. */
+:root {
+  --canvas: #fffdf7;
+  --surface: #ffffff;
+  --ink: #202124;
+  --ink-2: #5f6368;
+  --rule: #e6e2d6;
+  --accent: #ffab00;            /* brand gold: fills and markers only, never text */
+  --accent-tint: #ffab0026;
+  --mark-a: #b87800;            /* chart amber, validated on light surface */
+  --mark-b: #3d63c9;            /* chart blue, validated on light surface */
+  --track: #efebe0;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-data: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  --measure: 68ch;
+  --wide: 1040px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --canvas: #1d1b17; --surface: #25231e; --ink: #e8e6e1; --ink-2: #a8a49a; --rule: #3a372f;
+    --accent-tint: #ffab0024; --mark-a: #c27f00; --mark-b: #6b8be6; --track: #2f2c25; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --canvas: #1d1b17; --surface: #25231e; --ink: #e8e6e1; --ink-2: #a8a49a; --rule: #3a372f;
+  --accent-tint: #ffab0024; --mark-a: #c27f00; --mark-b: #6b8be6; --track: #2f2c25; color-scheme: dark;
+}
+
+body { background: var(--canvas); color: var(--ink); font: 16px/1.6 var(--font-body); }
+.page { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 56px 80px; }
+.col { max-width: var(--measure); margin-inline: auto; }
+.wide { max-width: var(--wide); margin-inline: auto; }
+h1, h2, h3 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.55rem; font-weight: 650; letter-spacing: -0.01em; }
+h3 { font-size: 1.05rem; font-weight: 650; }
+p { margin: 0; }
+a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--mark-b); outline-offset: 2px; border-radius: 4px; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.small { font-size: 0.875rem; }
+
+/* Header */
+.masthead { display: grid; gap: 20px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.brand svg { flex: none; }
+.lede { font-size: 1.15rem; color: var(--ink); max-width: 62ch; }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+.facts div { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; min-width: 0; }
+.facts dt { font-size: 0.75rem; color: var(--ink-2); letter-spacing: 0.02em; }
+.facts dd { margin: 0; font-weight: 600; }
+
+/* Sections */
+section { display: grid; gap: 18px; margin-top: 72px; }
+.kicker { font-size: 0.8rem; color: var(--ink-2); letter-spacing: 0.04em; font-weight: 600; }
+.prose { display: grid; gap: 14px; }
+.callout { border-left: 3px solid var(--accent); background: var(--accent-tint); padding: 14px 18px; border-radius: 0 6px 6px 0; }
+blockquote { margin: 0; padding-left: 16px; border-left: 2px solid var(--rule); color: var(--ink-2); font-style: italic; }
+blockquote cite { display: block; font-style: normal; font-size: 0.85rem; margin-top: 4px; }
+
+/* Timeline */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 16px; padding: 10px 0; border-top: 1px solid var(--rule); }
+.timeline li:last-child { border-bottom: 1px solid var(--rule); }
+.timeline .when { font-family: var(--font-data); font-size: 0.85rem; color: var(--ink-2); padding-top: 2px; }
+@media (max-width: 520px) { .timeline li { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Tables */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.925rem; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 0.78rem; color: var(--ink-2); font-weight: 600; letter-spacing: 0.02em; }
+td.r, th.r { text-align: right; }
+
+/* Charts */
+figure { margin: 0; display: grid; gap: 10px; }
+figcaption { font-size: 0.85rem; color: var(--ink-2); }
+.chart { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 18px 12px; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--ink); font-family: var(--font-body); }
+.chart .lbl2 { fill: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.85rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--canvas); font-size: 0.8rem; padding: 6px 9px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); }
+.hit { fill: transparent; cursor: default; }
+
+/* Comparison */
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.big { font-size: 2.2rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+
+/* Gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+.shot { margin: 0; display: grid; gap: 8px; align-content: start; }
+.shot button { all: unset; cursor: zoom-in; display: block; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.shot img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+.shot figcaption b { color: var(--ink); font-weight: 600; }
+dialog { border: 0; padding: 0; background: transparent; max-width: min(1400px, 96vw); }
+dialog::backdrop { background: #000000c0; }
+dialog img { display: block; max-width: 100%; max-height: 90vh; border-radius: 6px; }
+dialog form { text-align: right; margin-bottom: 8px; }
+dialog button { font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+
+.decisions { display: grid; gap: 22px; }
+.decision { display: grid; gap: 6px; }
+footer { margin-top: 80px; padding-top: 20px; border-top: 1px solid var(--rule); display: grid; gap: 8px; }
+@media (prefers-reduced-motion: no-preference) { .shot button { transition: border-color .15s; } .shot button:hover { border-color: var(--accent); } }
+</style>
+
+<main class="page">
+  <header class="col masthead">
+    <div class="brand">
+      <svg width="28" height="24" viewBox="0 0 28 24" aria-hidden="true"><rect x="2" y="4" width="6" height="18" rx="2" fill="#9aa0a6" transform="rotate(14 5 13)"/><rect x="10" y="3" width="6" height="18" rx="2" fill="#80868b" transform="rotate(14 13 12)"/><rect x="19" y="2" width="6" height="20" rx="2" fill="#ffab00"/></svg>
+      <span>Teachneat</span>
+    </div>
+    <h1>Building, testing and retiring a classroom tool for teachers</h1>
+    <p class="lede">Teachneat was a web app that gave secondary school teachers one class list for attendance, grouping, a name picker and personalized parent email, stored in a Google Sheet on the teacher's own Drive. I took it from discovery research to a live product with Google's OAuth verification, ran a structured test with colleagues, and sunset it in October 2026 when engagement data showed no evidence of a habit.</p>
+    <dl class="facts">
+      <div><dt>Role</dt><dd>Sole founder: research, product, engineering, operations</dd></div>
+      <div><dt>Timeline</dt><dd class="num">Jan to Oct 2026</dd></div>
+      <div><dt>Build</dt><dd><span class="num">281</span> commits, <span class="num">1,139</span> automated tests</dd></div>
+      <div><dt>Outcome</dt><dd>Sunset before fixed costs were committed</dd></div>
+    </dl>
+  </header>
+
+  <section class="col" aria-labelledby="s-problem">
+    <p class="kicker">Discovery</p>
+    <h2 id="s-problem">Starting from measured friction, not a feature list</h2>
+    <div class="prose">
+      <p>In January 2026 I surveyed teachers at a secondary school in the Waterloo Region District School Board (<span class="num">39</span> responses across math, English, science, physical education, guidance and special education), then ran four 15 to 20 minute follow-up interviews chosen to cover a range of teaching contexts. The survey quantified where non-instructional time went; the interviews explained why existing tools failed.</p>
+      <p>Three findings set the scope. Parent communication logistics, meaning finding past contact and assembling mass emails, was the most cited burden. The board's accommodation system was rated <span class="num">2.4</span> out of 5, and its usability pushed teachers to consult it only at the start of a semester. Group formation tools worked well enough (<span class="num">3.75</span> out of 5), which marked grouping as a convenience rather than a pain point.</p>
+    </div>
+    <figure>
+      <div class="chart" id="chart-research"></div>
+      <figcaption>Share of the <span class="num">39</span> survey respondents reporting each problem, January 2026. Values marked approximate were reported as rounded shares in the original summary.</figcaption>
+    </figure>
+    <blockquote>"I just need to know what the accommodations are. If I could just get a class list with the relevant accommodations, that would be great."<cite>Secondary teacher, interview</cite></blockquote>
+  </section>
+
+  <section class="col" aria-labelledby="s-scope">
+    <p class="kicker">Definition</p>
+    <h2 id="s-scope">From findings to requirements with targets</h2>
+    <p>The February product requirements document tied each module to a baseline from the research and a target the MVP had to hit, so the build could be judged against the problem instead of against its own feature list.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Pain point</th><th>Research baseline</th><th>MVP target</th></tr></thead>
+        <tbody>
+          <tr><td>Sending a personalized mass parent email</td><td>15 to 30+ minutes via SIS export and mail merge</td><td>Under 5 minutes, 3 steps or fewer</td></tr>
+          <tr><td>Finding a student's accommodations</td><td>Multiple clicks across system tabs</td><td>Under 30 seconds</td></tr>
+          <tr><td>Teachers reporting a missed accommodation</td><td class="num">70%</td><td>Under 20% after one semester</td></tr>
+          <tr><td>Random groups with one exclusion</td><td>8+ steps, re-entering the class list</td><td>3 steps or fewer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The same document listed its riskiest open question: whether a school board would permit accommodation data in a platform it had not approved. That question turned out to decide the product, and the section on what I would change starts there.</p>
+  </section>
+
+  <section class="col" aria-labelledby="s-timeline">
+    <p class="kicker">Execution</p>
+    <h2 id="s-timeline">Timeline</h2>
+    <ol class="timeline">
+      <li><span class="when">Jan 2026</span><span>Survey (<span class="num">n=39</span>) and four interviews</span></li>
+      <li><span class="when">Feb 2026</span><span>Product requirements document with baselines and targets</span></li>
+      <li><span class="when">Apr 2026</span><span>First commit; React and TypeScript client, Express server, Google Sheets as the data store</span></li>
+      <li><span class="when">Jul 2026</span><span>All five tools complete; multi-user accounts on Postgres begin</span></li>
+      <li><span class="when">Jul to Aug 2026</span><span>Sessions, entitlements, Stripe billing, two independent security reviews</span></li>
+      <li><span class="when">Aug 24, 2026</span><span>First production deployment at teachneat.com</span></li>
+      <li><span class="when">Aug 31, 2026</span><span>Accommodation tracking removed after a legal review of student-record authority</span></li>
+      <li><span class="when">Sep 24, 2026</span><span>Google OAuth app verification approved</span></li>
+      <li><span class="when">Oct 2026</span><span>Structured test with teaching colleagues, usage instrumentation and an exit poll</span></li>
+      <li><span class="when">Oct 18, 2026</span><span>Decision to sunset; poll closes <span class="num">Oct 23</span></span></li>
+    </ol>
+  </section>
+
+  <section class="wide" aria-labelledby="s-product">
+    <div class="col prose">
+      <p class="kicker">The product</p>
+      <h2 id="s-product">What shipped</h2>
+      <p>One class list fed five tools. All screenshots show a demonstration account with invented students. Select any image to enlarge it.</p>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="col" aria-labelledby="s-decisions">
+    <p class="kicker">Product judgment</p>
+    <h2 id="s-decisions">Decisions that shaped it</h2>
+    <div class="decisions">
+      <div class="decision">
+        <h3>The teacher's Drive as the system of record</h3>
+        <p>Student data lived in a spreadsheet the teacher owned, and the server kept no durable copy of it in the database, logs or backups. That one choice answered the first question a board's IT department asks, kept the requested Google scopes in the non-restricted tier, and avoided an annual third-party security assessment that a broader scope would have triggered.</p>
+      </div>
+      <div class="decision">
+        <h3>A free tier designed around habit, a paid tier around analysis</h3>
+        <p>Pricing was one plan at <span class="num">$6.99</span> a month or <span class="num">$69.90</span> a year (CAD) above a permanent free tier. The line was drawn so that the daily-use tools stayed free and the paid tier added statistics, higher email volume and grouping constraints, on the reasoning that a teacher who had formed a habit would pay for the analysis on top of it.</p>
+      </div>
+      <div class="decision">
+        <h3>Removing the feature the research ranked most severe</h3>
+        <p>A review of who may authorize a third-party tool to hold special education records concluded that the authority sits with the school board, and that a teacher's own consent transfers none of it. I removed accommodation tracking permanently, narrowed the launch to Ontario and made it free for the first year. It was the right legal call, and it also removed the module behind the research's strongest finding.</p>
+      </div>
+      <div class="decision">
+        <h3>Instrumentation a school board could read</h3>
+        <p>Usage was measured as monthly counts per tool plus the first date each account reached each milestone, with no event stream and no timestamps finer than a month. That was enough to answer the two questions that mattered (which tools teachers adopt, and whether use holds up) while staying simple to describe in a privacy review.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="col" aria-labelledby="s-test">
+    <p class="kicker">Validation</p>
+    <h2 id="s-test">The test</h2>
+    <div class="prose">
+      <p>With the product live and verified, I shared it with teaching colleagues at my school, explained what each tool did, and offered a gift card draw to anyone who submitted feedback. The test was built to answer one question before I committed to the costs of a public launch: would teachers who tried it come back on their own?</p>
+      <p>I measured it two ways. Behavior came from the product's own activation milestones and session records. Stated intent came from an anonymous exit poll asking how often each teacher would use each tool in a real school year, and how likely they were to create an account for one.</p>
+    </div>
+    <div class="compare">
+      <div class="panel">
+        <span class="kicker">What testers did</span>
+        <span class="big num">2</span>
+        <span class="muted small">tester accounts created</span>
+        <ul class="small">
+          <li>Both added a student within minutes of signing up</li>
+          <li>Both opened the Name Picker</li>
+          <li>Neither saved attendance, generated groups or sent an email</li>
+          <li>Each account recorded a single session</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <span class="kicker">What testers said</span>
+        <span class="big num" id="poll-n">2</span>
+        <span class="muted small" id="poll-asof">poll responses as of Oct 18; poll closes Oct 23</span>
+        <ul class="small">
+          <li>Both rated their likelihood of creating an account at <span class="num">4</span> out of 5</li>
+          <li>Attendance and grouping drew expected use of <span class="num">3</span> to <span class="num">5</span> out of 5</li>
+          <li>One respondent rated the Name Picker <span class="num">1</span>, "not useful"</li>
+          <li>One suggested grouping only the students present today</li>
+        </ul>
+      </div>
+    </div>
+    <figure>
+      <div class="chart" id="chart-poll"></div>
+      <div class="legend" id="legend-poll"></div>
+      <figcaption>Exit poll: "How often would you use this tool during a real school year?" from 1 (never) to 5 (every day), and "How likely are you to make an account?" from 1 (certainly won't) to 5 (certainly would). Each dot is one anonymous response.</figcaption>
+    </figure>
+    <div class="callout prose">
+      <p><strong>Stated intent and behavior pointed in opposite directions.</strong> Respondents expected to use attendance and grouping often, yet neither tester account saved an attendance register or generated a group, and the one tool both accounts did open was the one a respondent rated least useful. The poll was anonymous, so responses are not linked to accounts, but both came from the same small group.</p>
+    </div>
+    <p class="muted small">The sample is far too small to estimate anything with confidence, and I have treated it that way. The test was not designed to measure a rate. It was designed to see whether the one signal a subscription business needs, unprompted repeat use, appeared at all among people who knew the developer and had an incentive to engage. It did not.</p>
+  </section>
+
+  <section class="col" aria-labelledby="s-decision">
+    <p class="kicker">Decision</p>
+    <h2 id="s-decision">Why I stopped</h2>
+    <div class="prose">
+      <p>Four pieces of evidence pointed the same way, and none of them depended on the small sample alone.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Evidence</th><th>What it meant for the business</th></tr></thead>
+        <tbody>
+          <tr><td>The most severe researched pain point could not legally ship</td><td>The remaining tools solve problems teachers already rate as adequately served by free alternatives</td></tr>
+          <tr><td>Testers with context and an incentive did not return</td><td>A free-to-paid model depends on a daily habit forming first; none formed</td></tr>
+          <tr><td>No tester signed in with a school-managed Google account</td><td>Real use requires each board's IT department to allowlist the app, a sales cycle measured in months per board</td></tr>
+          <tr><td>Fixed costs arrive before revenue</td><td>Hosting alone ran about <span class="num">$31</span> USD a month, roughly seven subscribers at the planned price, before insurance, legal review and tax registration</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout prose">
+      <p><strong>The timing was deliberate.</strong> The test ran before any long-term commitment was made. Liability insurance, a lawyer's review of the legal documents, a business mailing address and tax registration were all scheduled and none had been signed. Total cash spent on the product was limited to hosting, the domain and the business-name registration.</p>
+    </div>
+  </section>
+
+  <section class="col" aria-labelledby="s-learn">
+    <p class="kicker">Retrospective</p>
+    <h2 id="s-learn">What I would do differently</h2>
+    <div class="decisions">
+      <div class="decision">
+        <h3>Test the riskiest assumption first</h3>
+        <p>Board policy on accommodation data was open question two in the February requirements document. It was answered in August, after the module had been built, deployed and then removed. A week of conversations with a privacy officer in February would have reshaped the product before any code existed.</p>
+      </div>
+      <div class="decision">
+        <h3>Measure retention before building infrastructure</h3>
+        <p>Accounts, billing, encryption key management and two security reviews were necessary for a public launch and unnecessary for learning whether teachers would return. A spreadsheet prototype shared with ten teachers for a month would have produced the same retention signal at a fraction of the cost.</p>
+      </div>
+      <div class="decision">
+        <h3>Treat distribution as part of the product</h3>
+        <p>Teachers do most of their work in school-managed accounts that board IT controls. The path to those accounts, board allowlisting, was planned as a later phase. It should have been validated alongside the first prototype, because without it the product could only reach teachers' personal accounts.</p>
+      </div>
+      <div class="decision">
+        <h3>Weight behavior over stated intent</h3>
+        <p>I did, and it is the reason this ended in October rather than after a year of operating costs. The exit poll alone would have read as cautiously positive.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="col" aria-labelledby="s-next">
+    <p class="kicker">If revisited</p>
+    <h2 id="s-next">Ideas recorded for a future version</h2>
+    <p>The backlog was kept as specifications with design questions rather than a wish list. The most relevant entries if the idea returns:</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Idea</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td>Roster import from Google Classroom and CSV</td><td>Removes manual setup, the largest cost a new teacher faces</td></tr>
+          <tr><td>Group only students present today</td><td>Requested in the exit poll; reads the attendance already recorded</td></tr>
+          <tr><td>Drag a student to open space to make a new group</td><td>Makes manual adjustments match how teachers rearrange a room</td></tr>
+          <tr><td>Student information system integration</td><td>Requires a board agreement, which makes it a business-to-business product rather than a feature</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="col small muted">
+    <p><strong>Method notes.</strong> Research figures come from the January 2026 survey summary. Usage figures are aggregate counts from the production database, read on Oct 18, 2026, excluding the developer's own and test accounts; no student data was stored in or read from that database. Poll figures are from an anonymous form that collected no names or email addresses.</p>
+    <p>Joe Waters, October 2026.</p>
+  </footer>
+</main>
+
+<dialog id="viewer" aria-label="Screenshot">
+  <form method="dialog"><button id="viewer-close">Close</button></form>
+  <img id="viewer-img" alt="">
+</dialog>
+
+<script>
+// Research findings: share of 39 respondents (approx = reported as a rounded share).
+const RESEARCH = [
+  { label: 'Spend 5+ min a week on communication logistics', value: 74, approx: true },
+  { label: 'Have missed an accommodation they should have provided', value: 70 },
+  { label: 'Report friction recalling parent contact history', value: 60 },
+  { label: 'Rate the board accommodation system 1 or 2 of 5', value: 54, approx: true },
+  { label: 'Spend 15+ min a week on communication logistics', value: 26, approx: true },
+];
+// Exit poll, anonymous. Update when the poll closes on Oct 23.
+const POLL = {
+  asOf: 'Oct 18',
+  rows: ['Attendance', 'Grouping', 'Name Picker', 'Mass email', 'Would create an account'],
+  responses: [
+    [3, 5, 1, 4, 4],
+    [5, 3, 4, 2, 4],
+  ],
+};
+const SHOTS = [
+  ['app-students-roster.png', 'Students', 'The class list every tool reads from'],
+  ['app-student-detail.png', 'Student detail', 'Contact, notes and an attendance history heat map'],
+  ['app-attendance-entry.png', 'Attendance entry', 'One tap per student, saved to the teacher\'s sheet'],
+  ['app-attendance-statistics.png', 'Attendance statistics', 'Absence rate and streaks against a configurable threshold'],
+  ['app-attendance-history-dark.png', 'Attendance history, dark mode', 'A term at a glance'],
+  ['app-grouping.png', 'Grouping', 'Random groups by size or count, with keep-together and keep-apart constraints'],
+  ['app-name-picker-wheel.png', 'Name Picker', 'Wheel and card-deck modes for projection'],
+  ['app-email-compose.png', 'Email', 'Personalized mass email from the teacher\'s own Gmail, capped at 120 a day'],
+  ['app-admin-metrics.png', 'Operator metrics', 'Activation milestones and monthly tool use, aggregate only'],
+  ['public-landing.png', 'Landing page', 'Public marketing page'],
+  ['public-for-admins.png', 'For school administrators', 'The allowlisting and data-handling brief for board IT'],
+  ['app-attendance-entry-mobile.png', 'Phone layout', 'Attendance entry at phone width'],
+];
+
+const NS = 'http://www.w3.org/2000/svg';
+function el(name, attrs, parent) {
+  const n = document.createElementNS(NS, name);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function tooltip(host) {
+  const t = document.createElement('div');
+  t.className = 'tip'; t.hidden = true; host.appendChild(t);
+  return {
+    show(evt, text) {
+      const r = host.getBoundingClientRect();
+      t.textContent = text; t.hidden = false;
+      t.style.left = (evt.clientX - r.left) + 'px'; t.style.top = (evt.clientY - r.top) + 'px';
+    },
+    hide() { t.hidden = true; },
+  };
+}
+
+function researchChart() {
+  const host = document.getElementById('chart-research');
+  const W = 640, rowH = 46, top = 6, labelH = 18, H = top + RESEARCH.length * rowH + 22;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Bar chart of survey findings' }, host);
+  const tip = tooltip(host);
+  const x0 = 0, x1 = W - 60, scale = v => x0 + (x1 - x0) * v / 100;
+  [0, 25, 50, 75, 100].forEach(t => {
+    const gx = scale(t);
+    el('line', { x1: gx, x2: gx, y1: top, y2: H - 20, stroke: 'var(--rule)', 'stroke-width': 1 }, svg);
+    const lt = el('text', { x: gx, y: H - 4, 'font-size': 11, 'text-anchor': t === 0 ? 'start' : 'middle', class: 'lbl2' }, svg);
+    lt.textContent = t + '%';
+  });
+  RESEARCH.forEach((d, i) => {
+    const y = top + i * rowH;
+    const lab = el('text', { x: 0, y: y + 13, 'font-size': 13 }, svg); lab.textContent = d.label;
+    const by = y + labelH + 2, bh = 14, bw = scale(d.value) - x0;
+    el('rect', { x: x0, y: by, width: x1 - x0, height: bh, rx: 4, fill: 'var(--track)' }, svg);
+    el('rect', { x: x0, y: by, width: bw, height: bh, rx: 4, fill: 'var(--mark-a)' }, svg);
+    const v = el('text', { x: x0 + bw + 8, y: by + 11.5, 'font-size': 12.5, 'font-weight': 600, class: 'num' }, svg);
+    v.textContent = (d.approx ? '~' : '') + d.value + '%';
+    const hit = el('rect', { x: 0, y: y, width: W, height: rowH - 4, class: 'hit' }, svg);
+    hit.addEventListener('mousemove', e => tip.show(e, `${d.label}: ${d.approx ? 'about ' : ''}${d.value}% of 39`));
+    hit.addEventListener('mouseleave', tip.hide);
+  });
+}
+
+function pollChart() {
+  const host = document.getElementById('chart-poll');
+  const rows = POLL.rows, W = 640, labW = 170, rowH = 40, top = 8, H = top + rows.length * rowH + 26;
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Dot plot of exit poll responses' }, host);
+  const tip = tooltip(host);
+  const x0 = labW + 14, x1 = W - 16, scale = v => x0 + (x1 - x0) * (v - 1) / 4;
+  [1, 2, 3, 4, 5].forEach(t => {
+    const gx = scale(t);
+    el('line', { x1: gx, x2: gx, y1: top, y2: H - 22, stroke: 'var(--rule)', 'stroke-width': 1 }, svg);
+    const lt = el('text', { x: gx, y: H - 4, 'font-size': 11, 'text-anchor': 'middle', class: 'lbl2' }, svg);
+    lt.textContent = t;
+  });
+  const colors = ['var(--mark-a)', 'var(--mark-b)'];
+  rows.forEach((name, i) => {
+    const cy = top + i * rowH + rowH / 2;
+    if (i === rows.length - 1) el('line', { x1: 0, x2: W, y1: cy - rowH / 2, y2: cy - rowH / 2, stroke: 'var(--rule)', 'stroke-dasharray': '3 3' }, svg);
+    const lab = el('text', { x: 0, y: cy + 4.5, 'font-size': 13 }, svg); lab.textContent = name;
+    const vals = POLL.responses.map(r => r[i]);
+    POLL.responses.forEach((r, k) => {
+      const v = r[i];
+      const same = vals.filter(x => x === v).length > 1;
+      const cx = scale(v) + (same ? (k === 0 ? -7 : 7) : 0);
+      el('circle', { cx, cy, r: 7, fill: colors[k % colors.length], stroke: 'var(--surface)', 'stroke-width': 2 }, svg);
+      const hit = el('circle', { cx, cy, r: 14, class: 'hit' }, svg);
+      hit.addEventListener('mousemove', e => tip.show(e, `${name}, response ${k + 1}: ${v} of 5`));
+      hit.addEventListener('mouseleave', tip.hide);
+    });
+  });
+  const legend = document.getElementById('legend-poll');
+  POLL.responses.forEach((_, k) => {
+    const s = document.createElement('span');
+    s.innerHTML = `<i class="sw" style="background:${colors[k % colors.length]}"></i>Response ${k + 1}`;
+    legend.appendChild(s);
+  });
+  document.getElementById('poll-n').textContent = POLL.responses.length;
+  document.getElementById('poll-asof').textContent = `poll responses as of ${POLL.asOf}; poll closes Oct 23`;
+}
+
+function gallery() {
+  const g = document.getElementById('gallery');
+  const dlg = document.getElementById('viewer'), img = document.getElementById('viewer-img');
+  SHOTS.forEach(([file, title, caption]) => {
+    const f = document.createElement('figure'); f.className = 'shot';
+    const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Enlarge ' + title);
+    const i = document.createElement('img'); i.src = 'screenshots/' + file; i.alt = title + ': ' + caption;
+    b.appendChild(i);
+    b.addEventListener('click', () => { img.src = i.src; img.alt = i.alt; if (dlg.showModal) dlg.showModal(); });
+    const c = document.createElement('figcaption'); c.className = 'small muted';
+    const t = document.createElement('b'); t.textContent = title;
+    c.append(t, document.createTextNode('. ' + caption));
+    f.append(b, c); g.appendChild(f);
+  });
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+}
+
+researchChart();
+pollChart();
+gallery();
+</script>

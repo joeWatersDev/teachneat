@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- The icon crop, not the mark: in a square slot the uncropped mark wastes
+         resolution a 16px favicon cannot spare (design/brand/README.md).
+         The SVG switches its own colour on prefers-color-scheme; the .ico is
+         the fallback for the browsers that still want one. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" sizes="16x16 32x32 48x48 256x256" href="/favicon.ico" />
+    <!-- The installed-app icon sits on a solid ground rather than transparency,
+         because iOS composites an apple-touch-icon onto black and the leaning
+         books all but vanish there. No corner radius is baked in: every host
+         that uses these applies its own mask. -->
+    <link rel="apple-touch-icon" href="/app-icon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teachneat</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,323 @@
+# Phase 2, Step 6d. Runs on every push and pull request to main.
+#
+# The deploy step is here rather than in App Platform's own `deploy_on_push`,
+# and that is the whole point. Build-on-push and a separate test workflow run in
+# parallel, so a push with failing tests deploys anyway and the checks are
+# decorative. Making the deploy a job that `needs` the checks is what turns them
+# into a gate.
+#
+# `deploy_on_push` must therefore stay false in .do/app.yaml. If it is ever
+# turned back on, these checks stop gating anything again, silently.
+name: CI
+
+#
+# A push to main now deploys, so a docs-only push would restart production to
+# publish markdown — with instance_count 1 that is a brief outage and a cold
+# working set for nothing. paths-ignore skips the workflow only when *every*
+# changed file matches, so a commit touching both code and prose still runs the
+# checks and still deploys.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'design/**'
+      - '.githooks/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'design/**'
+      - '.githooks/**'
+      - '.gitignore'
+      - 'LICENSE'
+
+# Two pushes in quick succession would otherwise queue two full runs, and the
+# earlier one deploys a commit that is already superseded. Grouping by ref and
+# cancelling in progress keeps the newest push the one that ships. Pull requests
+# group separately from the branch push by including the workflow and ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  deploy:
+    # Only after both check jobs pass, only on main, and never for a pull
+    # request from a fork, which must not be able to reach the deploy token.
+    needs: [server, client]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # A named environment is where a required reviewer can be added later if a
+    # manual approval before production is ever wanted.
+    environment: production
+    steps:
+      # Pinned to a commit, not to `v2`, because `v2` here is a *branch* rather
+      # than even a floating tag: it is mutable by design, and this is the step
+      # that holds a token which can deploy production. A SHA is the only
+      # reference an upstream account compromise cannot repoint. The trailing
+      # comment is what keeps the pin legible and lets Dependabot bump it.
+      #
+      # The two first-party actions above are pinned the same way for the same
+      # reason, though the exposure is smaller: they run before the token exists
+      # in the job, so the worst they reach is the checkout and the build.
+      #
+      # Updating a pin means reading the diff between the two commits, not just
+      # taking whatever the tag now points at; that is the cost of the pin and
+      # also the whole point of it.
+      - uses: digitalocean/action-doctl@3cb3953159719656269e044e0e24ca16dd2a690f # v2.5.2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          # **Pinned, and the SHA above does not cover this.** The action's
+          # `version` defaults to `latest`, which it resolves by asking the
+          # GitHub releases API — unauthenticated, from a shared runner IP. On
+          # 2026-09-12 that request came back 403 rate-limited and the action
+          # fell back to doctl **1.98.1**, a 2023 build in which
+          # `apps get-deployment --format Phase` prints `<nil>` instead of the
+          # phase. The watch loop below then polled a deployment that had been
+          # live for eighteen minutes, and would have redeployed production to
+          # recover from nothing. Pinning removes the lookup, so there is no
+          # request to be rate-limited and no fallback to land on.
+          #
+          # Bumping this means checking that `apps get-deployment --format
+          # Phase` still prints a bare phase, which is the one thing the loop
+          # reads.
+          version: 1.167.0
+      # Deploying is its own small control loop rather than `doctl ... --wait`,
+      # because `--wait` answers the wrong question in two directions and both
+      # cost real incidents on this app.
+      #
+      # It gives up after about thirty minutes and exits non-zero when it does,
+      # which is not the same thing as a failed deploy: a deployment once spent
+      # 47 minutes waiting for DigitalOcean to allocate a builder, `--wait`
+      # timed out, the run went red, and nobody looked again for days because
+      # "the deploy failed" was the obvious reading. The push it carried was
+      # simply missing from production. It also does not return promptly when
+      # its deployment is superseded, so a run can sit for half an hour polling
+      # a deployment that was cancelled minutes in.
+      #
+      # And the opposite mistake is just as bad. Two deployments have now hung
+      # in exactly the same shape: a builder allocated, two of three components
+      # built, and the third left in RUNNING **having emitted no build log at
+      # all** — where that component normally emits 131 lines (server) or 174
+      # (client). It hit the server component once and the client component the
+      # next time, on the same code, so it is DigitalOcean's build
+      # orchestration rather than anything in this repo. Neither recovered on
+      # its own; a superseding deployment is the only way to clear one, as
+      # there is no cancel.
+      #
+      # So: poll the deployment this job created, by id, and treat "no new
+      # build-log output while still building" as the wedge signal. It is
+      # visible in about two minutes, against the thirty `--wait` needs to say
+      # anything at all. A healthy client component goes 0 -> 58 -> 169 lines
+      # inside a single minute; a wedged one never leaves 0.
+      #
+      # On a wedge or an outright failure the job supersedes its own deployment
+      # once and watches the replacement, which is exactly the manual recovery
+      # this pattern has needed twice. Only if the retry also wedges does the
+      # run go red, and by then red means something.
+      #
+      # **A third shape, and it is this loop's own fault rather than
+      # DigitalOcean's.** On 2026-09-12 an unpinned doctl printed `<nil>` where
+      # the phase goes (see the pin above). `<nil>` is not ACTIVE, not ERROR and
+      # not BUILDING, so the terminal cases never matched and the stall test
+      # stayed disarmed: nothing was left to end the wait but the 25-minute cap,
+      # after which the job would have redeployed production to recover from a
+      # deployment that had gone live twenty minutes earlier. The loop trusted a
+      # string it had never checked. An answer outside the set of real phases is
+      # now a fast, explicit failure that does **not** redeploy — a phase we
+      # cannot read is a reason to stop and look, never a reason to touch
+      # production.
+      - name: Deploy
+        env:
+          APP_ID: ${{ secrets.DO_APP_ID }}
+          # A normal end-to-end deploy is about three minutes. Five minutes with
+          # no new build output is therefore well clear of a slow-but-healthy
+          # build, and the two wedges sat at zero for as long as they were left.
+          STALL_SECONDS: '300'
+          # A hard cap per attempt, for a hang that somehow keeps logging.
+          ATTEMPT_TIMEOUT: '1500'
+          POLL_SECONDS: '20'
+        run: |
+          # `set -u`, and deliberately **not** `pipefail`. The step this
+          # replaces used `set -o pipefail` with `doctl ... | head -1`, and that
+          # pair is fatal: `head` exits after one line, `doctl` takes SIGPIPE
+          # and dies 141, `pipefail` promotes 141 to the pipeline's status, and
+          # GitHub runs these steps under `bash -e`. The whole fallback path was
+          # dead code — it printed one warning and died before evaluating
+          # anything, and the run it was meant to rescue went red for a reason
+          # that had nothing to do with the deployment.
+          #
+          # Without pipefail, every helper below ends in `tr` or `wc`, which
+          # succeed whatever `doctl` did, so a transient API failure is a poll
+          # that reports nothing rather than a killed job. That is the right
+          # behaviour in a loop that is going to poll a hundred times.
+          set -u
+
+          # `head -1` on a list would read whichever deployment is newest, which
+          # is not necessarily this job's — that is how the first version of
+          # this step would have reported success for a deployment it did not
+          # create. Everything below keys on the id we captured.
+          phase_of() {
+            timeout 60 doctl apps get-deployment "$APP_ID" "$1"               --format Phase --no-header 2>/dev/null | tr -d '[:space:]'
+          }
+
+          # Total build-log lines for a deployment. The count only ever grows
+          # during a build, so it is a progress counter that needs no parsing.
+          # Failures are absorbed: no logs yet is zero, not an error.
+          log_lines() {
+            timeout 90 doctl apps logs "$APP_ID" --deployment "$1" --type build 2>/dev/null | wc -l
+          }
+
+          # Every phase App Platform reports. Anything else — an empty string
+          # from a transient API failure, or `<nil>` from a doctl that does not
+          # understand the column — means the loop is not reading the phase, and
+          # a loop that cannot read the phase must not be the thing that decides
+          # to redeploy.
+          KNOWN_PHASES='PENDING_BUILD BUILDING PENDING_DEPLOY DEPLOYING ACTIVE ERROR CANCELED SUPERSEDED'
+
+          watch_deployment() {
+            local dep="$1" started stall_since last_lines phase lines now unreadable
+            started=$(date +%s)
+            stall_since=$started
+            last_lines=-1
+            unreadable=0
+
+            while :; do
+              phase=$(phase_of "$dep")
+              now=$(date +%s)
+
+              # Five consecutive polls rather than one, because a single empty
+              # answer is an ordinary API blip and the helpers above are written
+              # to absorb those. A hundred seconds is still fifteen times faster
+              # than the cap that used to be the only thing catching this.
+              case " $KNOWN_PHASES " in
+                *" ${phase:-} "*)
+                  unreadable=0
+                  ;;
+                *)
+                  unreadable=$(( unreadable + 1 ))
+                  if [ "$unreadable" -ge 5 ]; then
+                    echo "::error::doctl reported '${phase:-<empty>}' as the phase of deployment $dep, which is not a phase."
+                    echo "::error::doctl version: $(doctl version 2>/dev/null | head -1)"
+                    echo "::error::The deployment itself may be perfectly healthy. Check the DigitalOcean"
+                    echo "::error::console and curl -s https://teachneat.com/api/health before deploying again."
+                    return 2
+                  fi
+                  ;;
+              esac
+
+              case "$phase" in
+                ACTIVE)
+                  echo "Deployment $dep is live after $(( now - started ))s."
+                  return 0
+                  ;;
+                ERROR|CANCELED)
+                  echo "::warning::Deployment $dep finished in $phase."
+                  return 1
+                  ;;
+              esac
+
+              # The stall test applies only while building. Once past it the
+              # log stops growing for ordinary reasons, so keeping the test
+              # armed would call a healthy rollout wedged.
+              if [ "$phase" = "PENDING_BUILD" ] || [ "$phase" = "BUILDING" ]; then
+                lines=$(log_lines "$dep")
+                if [ "$lines" -ne "$last_lines" ]; then
+                  last_lines=$lines
+                  stall_since=$now
+                fi
+                if [ $(( now - stall_since )) -ge "$STALL_SECONDS" ]; then
+                  echo "::warning::Deployment $dep has produced no build output for ${STALL_SECONDS}s at ${lines} lines, phase $phase. Treating it as wedged."
+                  return 1
+                fi
+              else
+                stall_since=$now
+              fi
+
+              if [ $(( now - started )) -ge "$ATTEMPT_TIMEOUT" ]; then
+                echo "::warning::Deployment $dep has not settled in ${ATTEMPT_TIMEOUT}s (phase ${phase:-unknown})."
+                return 1
+              fi
+
+              echo "  $(date -u +%H:%M:%S) phase=${phase:-unknown} build_log_lines=${last_lines}"
+              sleep "$POLL_SECONDS"
+            done
+          }
+
+          for attempt in 1 2; do
+            echo "::group::Deployment attempt $attempt"
+            # Piped through `tr` for the same reason as the helpers: a failed
+            # create must reach the `-z` check below, not kill the job under -e.
+            DEP=$(doctl apps create-deployment "$APP_ID" --format ID --no-header 2>/dev/null | tr -d '[:space:]')
+            if [ -z "$DEP" ]; then
+              echo "::error::Could not create a deployment."
+              echo "::endgroup::"
+              exit 1
+            fi
+            echo "Created deployment $DEP."
+
+            watch_deployment "$DEP"
+            case $? in
+              0)
+                echo "::endgroup::"
+                echo "Confirm with: curl -s https://teachneat.com/api/health"
+                exit 0
+                ;;
+              2)
+                # Cannot read the phase. The retry below exists to clear a
+                # wedged deployment and this is not one: creating a second
+                # deployment here would restart production on the strength of a
+                # string the loop did not understand.
+                echo "::endgroup::"
+                exit 1
+                ;;
+            esac
+            echo "::endgroup::"
+
+            if [ "$attempt" -eq 1 ]; then
+              # A new deployment supersedes the stuck one; there is no cancel.
+              echo "::warning::Retrying once with a fresh deployment."
+            fi
+          done
+
+          echo "::error::Both deployment attempts failed or wedged. Production is unchanged."
+          echo "::error::Check the build logs in the DigitalOcean console: a component sitting in"
+          echo "::error::RUNNING with no build output is the DigitalOcean-side hang, not a build failure."
+          exit 1

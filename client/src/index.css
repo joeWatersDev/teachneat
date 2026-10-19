@@ -1,0 +1,302 @@
+@import "tailwindcss";
+
+/* Dark mode is opt-in via a `.dark` class on <html>, managed by ThemeProvider. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens (DESIGN_SYSTEM.md).
+ * Mode-invariant: accent, semantic colors. Type scale and font.
+ * Mode-variant: backgrounds, borders, text — defined in :root (light) and overridden in .dark. */
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Accent (mode-invariant) — referenced as bg-accent / text-accent / border-accent */
+  --color-accent: #ffab00;
+  --color-accent-hover: #e69b00;
+  --color-accent-muted: #ffab0020;
+  /* Foreground for text and icons sitting ON the accent. Near-black in both
+     modes, because the accent is a single mode-invariant gold and light text on
+     it fails WCAG AA at body sizes (DESIGN_SYSTEM, accent rules). */
+  --color-on-accent: #1a1a1a;
+
+  /* Semantic (mode-invariant) */
+  --color-danger: #d93025;
+  --color-danger-bg: #d9302515;
+  --color-success: #34a853;
+  --color-success-bg: #34a85315;
+  --color-warning: #fbbc04;
+  --color-warning-bg: #fbbc0420;
+  --color-info: #4285f4;
+  /* Tooltip surface. Mode-invariant by design: a tooltip is an overlay that
+     reads the same against either page background (DESIGN_SYSTEM, Tooltips). */
+  --color-tooltip: #484848;
+
+  /* Marketing band ground (DESIGN_SYSTEM, "The Public Shell"). A neutral pulled
+     a few degrees toward the accent hue, so a full-width band on the landing
+     page separates from the content around it without using the accent
+     decoratively. Not used inside the app. */
+  --color-canvas: #fffdf7;
+
+  /* Light-mode defaults (overridden inside .dark below). */
+  --color-base: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-sidebar: #f1f3f4;
+  --color-elevated: #ffffff;
+  --color-hover: #e8eaed;
+  --color-active: #dadce0;
+
+  --color-subtle: #dadce0;
+  --color-strong: #bdc1c6;
+
+  --color-primary: #202124;
+  --color-secondary: #5f6368;
+  --color-disabled: #9aa0a6;
+
+  /* The logo's two leaning books, which separate from each other by shade rather
+     than by a third hue (design/brand/README.md).
+
+     These are opaque greys rather than `--color-secondary` at reduced opacity,
+     which is what they were until the shades were found to move: opacity
+     composites against whatever is behind the mark, so the same declaration
+     rendered 167 of 255 on the white top bar, 161 on the sidebar and 157 on a
+     hover row, and inverted its ordering between modes. The values are still
+     derived from the secondary text colour, but resolved once by
+     design/brand/generate.py (`books()`) rather than at paint time. Mirrored
+     from there — change both. */
+  --logo-book-back: #a7a9ac;
+  --logo-book-mid: #7f8286;
+
+  /* Type scale (DESIGN_SYSTEM.md). The default text-base is 14/20. */
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 18px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-md: 16px;
+  --text-md--line-height: 24px;
+  --text-lg: 20px;
+  --text-lg--line-height: 28px;
+  --text-xl: 24px;
+  --text-xl--line-height: 32px;
+
+  /* Display steps, above the app's scale and used only on the public marketing
+     pages (DESIGN_SYSTEM, "The Public Shell"). The app tops out at `xl`, which
+     is right for a dense tool and far too small for a landing headline. Both
+     carry negative tracking, which is what keeps a system font stack from
+     reading loose at these sizes. */
+  --text-display-md: clamp(24px, 3.4vw, 32px);
+  --text-display-md--line-height: 1.18;
+  --text-display-md--letter-spacing: -0.015em;
+  --text-display-lg: clamp(34px, 6vw, 52px);
+  --text-display-lg--line-height: 1.06;
+  --text-display-lg--letter-spacing: -0.022em;
+}
+
+/* Dark-mode overrides. */
+.dark {
+  --color-canvas: #1d1b17;
+  --color-base: #1a1a1a;
+  --color-surface: #1f1f1f;
+  --color-sidebar: #282828;
+  --color-elevated: #2d2d2d;
+  --color-hover: #333333;
+  --color-active: #3a3a3a;
+
+  --color-subtle: #3c3c3c;
+  --color-strong: #505050;
+
+  --color-primary: #e3e3e3;
+  --color-secondary: #9aa0a6;
+  --color-disabled: #5f6368;
+
+  /* Not the light pair: mixing toward a dark ground darkens, so holding the
+     numbers fixed would put the back book at the dark end. These hold the
+     ordering instead — back book palest in both modes. */
+  --logo-book-back: #9aa0a6;
+  --logo-book-mid: #6c7075;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+/* Reserves the scrollbar's width whether or not the page scrolls. The content
+   column is centred, so on a system with classic scrollbars a page tall enough
+   to scroll (Email's compose view) otherwise shifts its whole column, title
+   included, by half the scrollbar's width against a page that does not. */
+html {
+  scrollbar-gutter: stable;
+}
+body {
+  background: var(--color-base);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Rich-text email editor content. Tailwind Preflight resets list markers and
+ * paragraph margins, so restore them for the contenteditable body. The email
+ * preview renders in an isolated iframe and is unaffected by these rules. */
+.ttk-editor :where(p) {
+  margin: 0 0 0.5rem;
+}
+.ttk-editor :where(p):last-child {
+  margin-bottom: 0;
+}
+.ttk-editor :where(ul) {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0 0 0.5rem;
+}
+.ttk-editor :where(ol) {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 0 0 0.5rem;
+}
+.ttk-editor :where(a) {
+  color: var(--color-info);
+  text-decoration: underline;
+}
+
+/* Conditional blocks: a left accent border and a small derived label chip so a
+ * teacher can see which lines are conditional while authoring. */
+.ttk-editor .ttk-conditional {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 0.5rem;
+}
+.ttk-editor .ttk-conditional::before {
+  content: attr(data-condition-label);
+  display: block;
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  color: var(--color-secondary);
+}
+
+/* Name Picker — card deck (features/name-picker/CardDeck.tsx). A 5:7 playing-card
+ * stack that shuffles, then flips the top card to reveal the drawn name. */
+.ttk-deck-stack {
+  position: relative;
+  container-type: size;
+  perspective: 1400px;
+}
+.ttk-deck-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 6%;
+}
+/* Card back: border width is a variable so the modal's mini previews can shrink it;
+ * each design modifier supplies the pattern and border colour. */
+.ttk-deck-back {
+  border: var(--ttk-deck-border, 0.5rem) solid;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.ttk-deck-back--classic {
+  border-color: #ffab00;
+  background: repeating-linear-gradient(45deg, #1d3f74 0 7%, #2a5292 7% 14%);
+}
+.ttk-deck-back--crimson {
+  border-color: #f2d16b;
+  background: repeating-linear-gradient(45deg, #7a1420 0 7%, #a3202f 7% 14%);
+}
+.ttk-deck-back--forest {
+  border-color: #efe6c8;
+  background: repeating-linear-gradient(-45deg, #14532d 0 7%, #1c6b3c 7% 14%);
+}
+.ttk-deck-back--royal {
+  border-color: #ffd700;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.16) 0 6%, transparent 6% 12%),
+    repeating-linear-gradient(-45deg, rgba(255, 215, 0, 0.16) 0 6%, transparent 6% 12%), #3b0f6b;
+}
+.ttk-deck-back--dots {
+  border-color: #ffab00;
+  background-color: #12294a;
+  background-image: radial-gradient(#ffab00 22%, transparent 24%);
+  background-size: 16% 16%;
+}
+.ttk-deck-top {
+  transform-style: preserve-3d;
+}
+.ttk-deck-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform var(--ttk-flip-ms, 650ms) ease-in-out;
+}
+.ttk-deck-top.is-flipped .ttk-deck-inner {
+  transform: rotateY(180deg);
+}
+.ttk-deck-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 6%;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.ttk-deck-front {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8%;
+  transform: rotateY(180deg);
+  background: var(--color-elevated);
+  border: 0.25rem solid var(--color-subtle);
+  color: var(--color-primary);
+  font-weight: 700;
+  line-height: 1.15;
+  word-break: break-word;
+  font-size: clamp(0.9rem, 13cqw, 5rem);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* Riffle shuffle: two depth cards split aside and interleave back, twice. */
+.ttk-deck-shuffling .ttk-riffle-l {
+  animation: ttk-riffle-l 900ms ease-in-out;
+}
+.ttk-deck-shuffling .ttk-riffle-r {
+  animation: ttk-riffle-r 900ms ease-in-out;
+}
+@keyframes ttk-riffle-l {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25%,
+  75% {
+    transform: translateX(-42%) rotate(-7deg);
+  }
+  50% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+@keyframes ttk-riffle-r {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25%,
+  75% {
+    transform: translateX(42%) rotate(7deg);
+  }
+  50% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+/* Reduced motion (DESIGN_SYSTEM.md Accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
