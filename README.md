@@ -8,9 +8,9 @@ when the test showed no repeat use.
 
 **Read the case study:** [`portfolio/index.html`](portfolio/index.html). It covers the discovery research,
 the requirements and their targets, the product decisions, the test design and results, and the reasoning
-behind the decision to stop. The live site has been taken down; the screenshots in
+behind the decision to stop. The screenshots in
 [`portfolio/screenshots`](portfolio/screenshots) were captured from a demonstration account with invented
-students before it was.
+students before the site was retired.
 
 ![Students roster](portfolio/screenshots/app-students-roster.png)
 
