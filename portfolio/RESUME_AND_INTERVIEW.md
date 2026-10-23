@@ -1,58 +1,49 @@
-# Teachneat: Resume Material and Interview Notes
+# Teachneat: Resume and Interview Notes
 
 ## Resume entry
 
-**Founder, Teachneat** (classroom administration web app for secondary teachers) · Jan 2026 to Oct 2026
+**Founder and developer, Teachneat** (classroom web app for secondary teachers), January to October 2026
 
-- Ran discovery research with 39 survey respondents and 4 interviews, quantified the leading pain points (70% of teachers had missed a required accommodation; about 74% spent 5+ minutes a week on parent-communication logistics), and wrote a PRD that tied every module to a research baseline and a measurable target.
-- Built and launched a full-stack product (React, TypeScript, Express, Postgres, Google Sheets and Gmail APIs) with 1,139 automated tests, passing Google's OAuth app verification by limiting requests to non-restricted data scopes.
-- Designed a privacy-first architecture in which student data stayed in each teacher's own Google Sheet and no durable copy was kept on company servers, the core of the pitch to school-board IT departments.
-- Designed freemium pricing and the entitlement model, then switched billing off behind a single flag when a legal review narrowed the launch to a free Ontario year.
-- Instrumented activation milestones and monthly per-tool usage in a form simple enough to explain in a board privacy review, and used it to run a structured user test with an exit poll.
-- Recommended and executed a sunset after behavioral data showed no repeat use despite positive stated intent, stopping before insurance, legal and tax commitments were made.
+- Surveyed 39 teachers and interviewed 4 to find where their non-teaching time went. 70% had missed an accommodation they should have provided, and about 74% spent more than five minutes a week on parent-communication logistics.
+- Wrote a product requirements document that set a baseline and a target for each feature, such as cutting a class-wide parent email from 15 to 30+ minutes to under 5.
+- Built and launched the full product on my own (React, TypeScript, Express, Postgres, Google Sheets and Gmail APIs) with 1,139 automated tests, and got it through Google's OAuth app verification.
+- Stored all student data in each teacher's own Google Sheet, with no copy kept on the app's servers, to make the app easier for school boards to approve.
+- Designed the free and Premium plans and built Stripe billing, then switched billing off when a legal review limited the launch to a free year in Ontario.
+- Tracked first use of each tool and monthly usage per account, and used that data alongside a feedback form to test the product with three teachers.
+- Shut the product down when testing showed teachers weren't using the core tools, before signing up for insurance, a legal review or tax registration.
 
-### Shorter variant (three lines)
+### Shorter version
 
-- Founded and built Teachneat, a teacher productivity web app, from a 39-respondent research study and PRD to a live, Google-verified product.
-- Defined activation and retention instrumentation and ran a structured user test combining behavioral data with an exit poll.
-- Sunset the product on evidence that testers did not return, before committing to insurance, legal and tax costs.
+- Researched, built and launched Teachneat, a web app for teachers, from a 39-teacher survey and requirements document to a live product approved by Google.
+- Tested it with teachers using account usage data and a feedback form, and found that the tools they rated highly were the ones they didn't use.
+- Shut it down on that evidence before taking on insurance, legal and tax costs.
 
-## Profile summary (LinkedIn or portfolio)
+## Profile summary
 
-Teachneat was a web app I researched, designed, built and operated for secondary school teachers, combining attendance, grouping, a name picker and personalized parent email around one class list stored in the teacher's own Google Drive. It reached production with Google's OAuth verification approved. A structured test with teaching colleagues showed that stated interest did not translate into repeat use, and with the most severe researched problem ruled out by a legal review, I retired the product before taking on its fixed costs. The case study covers the research, the product decisions, the test design and the reasoning behind the decision to stop.
+Teachneat was a web app I researched, designed, built and ran for secondary school teachers. It kept one class list in the teacher's own Google Drive and used it for attendance, random groups, a name picker and personalized emails to families. It went live in August 2026 and passed Google's OAuth verification in September. When I tested it with colleagues, they rated the tools well but didn't use attendance or grouping, mainly because they already take attendance in the school's system. With the accommodation feature already removed after a legal review, I shut it down in October before taking on its ongoing costs. The case study covers the research, the main decisions, the testing and why I stopped.
 
 ## Interview stories
 
-Each story follows situation, action, result, with the numbers that hold it up.
+### Deciding what to build
 
-### Choosing what to build
+I had more problems from teachers than I could build for, so I ranked them using the survey. The board's accommodation system averaged 2.4 out of 5 and 70% of teachers had missed an accommodation, so accommodations came first. Grouping averaged 3.75 out of 5 with existing tools like Flippity, so I treated it as an extra. Each feature in the requirements document had a baseline and a target, for example a class-wide parent email going from 15 to 30+ minutes to under 5.
 
-- **Situation:** Teachers described many frustrations, and I could not build all of them.
-- **Action:** Surveyed 39 teachers and interviewed 4, then ranked problems by measured frequency and by satisfaction with existing tools. Grouping scored 3.75 out of 5 with existing tools, so I treated it as a convenience feature; the accommodation system scored 2.4 out of 5 and 70% of respondents reported a missed accommodation, so it led the scope.
-- **Result:** A PRD with a baseline and target for each module, for example mass parent email from 15 to 30+ minutes down to under 5.
+### Removing the most important feature
 
-### A decision that removed the strongest feature
+In August a legal review found that the school board, not the teacher, has the authority to approve a tool for special education records. I removed accommodation tracking completely, limited the launch to Ontario and made it free for the first year. It was the right call legally, but it took away the feature behind my strongest research result. Whether boards would allow that data had been an open question since February, and I would now answer a question like that before writing any code.
 
-- **Situation:** A legal review found that authority over special education records sits with the school board, not the teacher.
-- **Action:** Removed accommodation tracking permanently rather than hiding it behind a flag, narrowed the launch to Ontario and made it free for the first year so no one paid for a reduced product.
-- **Result:** Lower legal risk, and a clear view that the remaining product competed with free tools teachers already rated as adequate.
-- **What I would change:** That question was listed as open question two in February. I would now test it first, before writing code.
+### What testers said compared to what they did
 
-### Stated intent against behavior
-
-- **Situation:** Two colleagues created accounts and answered an anonymous exit poll.
-- **Action:** Compared what they said with what the accounts recorded.
-- **Result:** Both rated their likelihood of signing up at 4 out of 5 and expected frequent use of attendance and grouping, yet neither account saved attendance or generated a group, and each recorded one session. I treated the behavioral data as the stronger signal.
-- **On sample size:** The sample cannot estimate a rate, and I do not claim it does. The test was designed to check whether unprompted repeat use appeared at all among motivated, well-informed users. It did not.
+Three colleagues created accounts and three filled out a feedback form. On the form they rated grouping and attendance well, and two of three said they were likely to sign up (4, 4 and 2 out of 5). In the app, all three added students and opened the Name Picker, but none saved attendance, made groups or sent an email, and only one came back after the first day. One comment explained the attendance result: they would not take attendance twice, once for the school and once for the app. Three people can't tell you a rate, and I don't present it as one. What I wanted to know was whether people with every reason to try it would start using it regularly, and they didn't.
 
 ### Deciding to stop
 
-- **Situation:** The next steps were insurance, a lawyer's review, a business mailing address and, eventually, tax registration and a months-long approval process with each school board.
-- **Action:** Weighed four lines of evidence: the lost top feature, no repeat use, no use through school-managed accounts, and fixed costs (hosting alone was about $31 USD a month, roughly seven subscribers at the planned price) that arrive well before revenue.
-- **Result:** Stopped before any of those commitments were signed, kept the specifications for a possible future version, and documented the outcome.
+The next steps were insurance, a legal review, a business mailing address, tax registration and months of approvals with each school board. I weighed four things: the accommodation feature was gone, testers didn't use the core tools, none of them used a school Google account, and costs would start well before any revenue. Hosting alone was about $31 USD a month, roughly seven subscribers at the planned price. I stopped before signing up for any of those costs and kept the backlog in case I come back to it.
 
-## Questions to expect
+## Likely questions
 
-- **Why not keep going with a free product?** Free still carries hosting, insurance and privacy obligations to every teacher whose class list passes through the server, and without repeat use there was no path to the paid tier that would cover them.
-- **What would make you revisit it?** Evidence that a board would allowlist the app for its teachers, and roster import (Google Classroom or CSV) to remove setup cost. Both are specified in the project's backlog.
-- **What metric would you have used to decide to continue?** Repeat weekly use by testers without prompting over the trial period. Two single-session accounts did not reach the point where a threshold mattered.
+**Why not keep running it for free?** Free still costs hosting and insurance, and comes with privacy obligations to every teacher whose class list passes through the server. Without regular use there was no route to the paid plan that would cover those costs.
+
+**What would make you come back to it?** A school board willing to approve the app for its teachers, and a way to avoid double entry, either syncing attendance with the school's student information system or importing class lists from Google Classroom or a CSV file. Both are written up in the project's backlog.
+
+**What would you have needed to see to keep going?** Testers using the tools each week without being reminded. None of the accounts got to the point where a specific threshold would have mattered.

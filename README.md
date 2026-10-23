@@ -1,50 +1,47 @@
 # Teachneat
 
-Teachneat was a web app for secondary school teachers that combined attendance, grouping, a random name
-picker and personalized parent email around a single class list stored in a Google Sheet on the teacher's own
-Drive. I researched, designed, built and operated it from January to October 2026, took it to production
-with Google's OAuth app verification approved, ran a structured test with teaching colleagues, and retired it
-when the test showed no repeat use.
+Teachneat was a web app for secondary school teachers. It kept one class list in a Google Sheet on the
+teacher's own Drive and used it for attendance, random groups, a name picker and personalized emails to
+students and parents. I researched, built and ran it on my own between January and October 2026. It went live
+in August, passed Google's OAuth verification in September, and I shut it down in October after testing it
+with colleagues at my school.
 
-**Read the case study:** [`portfolio/index.html`](portfolio/index.html). It covers the discovery research,
-the requirements and their targets, the product decisions, the test design and results, and the reasoning
-behind the decision to stop. The screenshots in
-[`portfolio/screenshots`](portfolio/screenshots) were captured from a demonstration account with invented
-students before the site was retired.
+The case study is in [`portfolio/index.html`](portfolio/index.html). It covers the research, the
+requirements, the main decisions, the user testing and why I shut it down. The screenshots in
+[`portfolio/screenshots`](portfolio/screenshots) are from a demo account with made-up students, taken before
+the site came down.
 
 ![Students roster](portfolio/screenshots/app-students-roster.png)
 
-## At a glance
+## Summary
 
 | | |
 |---|---|
-| Role | Sole founder: research, product, engineering, operations |
-| Research | 39-response teacher survey and 4 interviews, January 2026 |
+| Role | Sole developer: research, design, development and operations |
+| Research | Survey of 39 teachers and 4 interviews, January 2026 |
 | Stack | React 19, TypeScript, Vite, Tailwind; Express 5, Postgres; Google Sheets, Drive and Gmail APIs; Stripe |
-| Scale of the build | 281 commits, about 36,000 lines of TypeScript, 1,139 automated tests |
-| Outcome | Sunset in October 2026, before insurance, legal and tax commitments were made |
+| Size | 281 commits, about 36,000 lines of TypeScript, 1,139 automated tests |
+| Outcome | Shut down after user testing, October 2026 |
 
 ## What is in this repository
 
-- `client/` and `server/`: the application. The server holds the Google tokens and calls Google's APIs on the
-  teacher's behalf; student data lives only in the teacher's spreadsheet.
-- Planning documents at the root: `IMPLEMENTATION_PLAN.md` (phases, design principles and the Phase 3
-  backlog), `DESIGN_SYSTEM.md`, `TESTING_PLAN.md`, `SHEETS_SCHEMA.md`, `API_CONTRACT.md` and
-  `DEPENDENCIES.md`. `HISTORY.md` is the full work log and the record of decisions with their rationale.
-- `ops/`: the incident response plan, the backup and restore procedure and its test record, and the OAuth scope
-  justification submitted to Google.
-- `portfolio/`: the case study, screenshots, the aggregate data behind its charts, and a summary for resumes
-  and interviews.
+- `client/` and `server/`: the app. The server holds the Google tokens and calls Google's APIs for the
+  teacher, and student data is only stored in the teacher's spreadsheet.
+- Planning documents in the root folder: `IMPLEMENTATION_PLAN.md` (phases, design principles and the backlog
+  of future ideas), `DESIGN_SYSTEM.md`, `TESTING_PLAN.md`, `SHEETS_SCHEMA.md`, `API_CONTRACT.md` and
+  `DEPENDENCIES.md`. `HISTORY.md` is the full work log, including the reasons behind each major decision.
+- `ops/`: the incident response plan, the backup and restore procedure with its test record, and the
+  explanation of OAuth scopes submitted to Google.
+- `portfolio/`: the case study, screenshots, the data behind its charts, and resume and interview notes.
 
-## Data and privacy notes
+## Data and privacy
 
-No student data is included anywhere in this repository. The usage figures in the case study are aggregate
-counts read from the production database, which never stored student data. The exit poll was anonymous and
-collected no names or email addresses. This repository was published as a fresh copy without the private
-repository's history.
+This repository contains no student data. The usage numbers in the case study are totals from the production
+database, which never stored student data. Feedback form answers are included without names. The repository
+was published as a new copy, without the history of the private repository it came from.
 
 ## Running it
 
-The app needs a Google Cloud OAuth client, a Postgres database and a Google Cloud KMS key; the variables are
-listed in `server/.env.example`. Client: `cd client && npm install && npm run dev`. Server:
-`cd server && npm install && npm run dev`. Tests: `npm test` in each directory.
+The app needs a Google Cloud OAuth client, a Postgres database and a Google Cloud KMS key. The settings are
+listed in `server/.env.example`. To run the client, use `cd client && npm install && npm run dev`, and for the
+server, `cd server && npm install && npm run dev`. Run `npm test` in either folder for the tests.
