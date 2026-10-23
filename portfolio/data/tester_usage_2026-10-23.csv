@@ -1,0 +1,9 @@
+metric,value,note
+tester_accounts,3,Accounts created by teaching colleagues between 2026-10-16 and 2026-10-21
+added_a_student,3,
+opened_name_picker,3,6 opens in total; counted on page open because the picker has no server request of its own
+saved_attendance,0,
+generated_groups,0,
+sent_email,0,
+returned_after_signup_day,1,One account was active again a week after signup
+signed_in_with_school_managed_account,0,All used personal Google accounts

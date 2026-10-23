@@ -1,9 +1,0 @@
-metric,value,note
-tester_accounts,2,Accounts created by teaching colleagues during the October 2026 test
-added_a_student,2,
-opened_name_picker,2,Counted on page open; the picker has no server request of its own
-saved_attendance,0,
-generated_groups,0,
-sent_email,0,
-sessions_per_account,1,Each account recorded one session
-signed_in_with_school_managed_account,0,Both used personal Google accounts
