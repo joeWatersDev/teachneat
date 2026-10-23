@@ -6,7 +6,8 @@ students and parents. I researched, built and ran it on my own between January a
 in August, passed Google's OAuth verification in September, and I shut it down in October after testing it
 with colleagues at my school.
 
-The case study is in [`portfolio/index.html`](portfolio/index.html). It covers the research, the
+The case study is at **https://joewatersdev.github.io/teachneat/**, and its source is in
+[`portfolio/index.html`](portfolio/index.html). It covers the research, the
 requirements, the main decisions, the user testing and why I shut it down. The screenshots in
 [`portfolio/screenshots`](portfolio/screenshots) are from a demo account with made-up students, taken before
 the site came down.
@@ -39,6 +40,12 @@ the site came down.
 This repository contains no student data. The usage numbers in the case study are totals from the production
 database, which never stored student data. Feedback form answers are included without names. The repository
 was published as a new copy, without the history of the private repository it came from.
+
+## License
+
+Copyright 2026 Joe Waters. The code and documents are available under the
+[PolyForm Noncommercial License 1.0.0](LICENSE.md). You can read, run and adapt them for personal,
+educational and other noncommercial purposes. Commercial use is not permitted without my written permission.
 
 ## Running it
 

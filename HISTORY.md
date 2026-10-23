@@ -4858,6 +4858,21 @@ its charts, and resume and interview material.
 every stored Google grant before the database is deleted; its dry run against production on 2026-10-18
 decrypted all five stored tokens and revoked nothing.
 
+### Sunset — teardown
+
+2026-10-23. The exit poll closed with three responses and three tester accounts, and the case study, resume
+notes and public README were rewritten in the operator's own voice with the final figures. The third
+response explained the attendance result: the teacher would not take attendance twice, once in the school's
+system and once in Teachneat.
+
+Teardown followed the private runbook. The operator chose to proceed without the full 60 days' notice the terms
+promise, on the basis that the three testers are colleagues and their spreadsheets stay in their own Drive.
+`revoke-all-grants.ts --execute` handled all 6 stored grants (5 revoked, 1 already invalid), the CI workflow
+was disabled, and the App Platform app was deleted. The operator then deleted the database cluster, revoked
+the DigitalOcean tokens, deleted the Google OAuth client and shut down the Google Cloud project, closed
+Stripe and Resend, removed the app and mail records at Cloudflare, and deleted the private GitHub repository
+after its history was archived to a local bundle and test-restored. Each deletion was verified afterwards.
+
 ## Decisions Made
 
 

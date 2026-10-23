@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Teachneat Case Study</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Teachneat, a classroom tool for secondary teachers: the research behind it, what was built, how it tested with teachers, and why it was shut down.">
@@ -111,7 +116,12 @@ dialog button { font: inherit; background: var(--surface); color: var(--ink); bo
 .item { display: grid; gap: 6px; }
 footer { margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--rule); display: grid; gap: 8px; }
 @media (prefers-reduced-motion: no-preference) { .shot button { transition: border-color .15s; } .shot button:hover { border-color: var(--accent); } }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
 </style>
+</head>
+<body>
 
 <main class="page">
   <header class="col masthead">
@@ -452,3 +462,5 @@ researchChart();
 pollChart();
 gallery();
 </script>
+</body>
+</html>

@@ -4,8 +4,8 @@ The direct next step to implement, the standing obligations no step owns, the mo
 and the open questions. This document is the authoritative record of what is finished and what is not.
 
 **Where the project stands.** The project was sunset on 2026-10-18 (reasoning under Decisions Made in
-[HISTORY.md](HISTORY.md)). Production stays live until the exit poll closes on 2026-10-23 and the two testers
-have had notice, then comes down by [SUNSET.md](SUNSET.md). The steps that would have followed (**8c → 8e →
+[HISTORY.md](HISTORY.md)) and production was taken down on 2026-10-23: the app, the database, the Google Cloud
+project and the private GitHub repository are all deleted. The steps that would have followed (**8c → 8e →
 8f → 9 → 9a → 10**) are not scheduled, and everything below them is kept as the state a revival would start
 from. Phase 1 is complete; Phase 2 is complete through Step 8, plus 8a, 8b and 8d.
 
@@ -63,11 +63,9 @@ not be lengthened until push invalidation is proven" passes it, and will fail it
 
 ## Next Step
 
-**Sunset teardown, by [SUNSET.md](SUNSET.md).** Before Friday 2026-10-23: turn off the domain's auto-renew
-at Cloudflare, confirm the free plans, and give the two testers notice. After it: final poll capture, grant
-revocation with `server/scripts/revoke-all-grants.ts`, then the DigitalOcean, Google Cloud, Resend, DNS and
-Stripe deletions in the runbook's order, and the private repository off GitHub. Every one of those deletions
-is permanent and is the operator's to run or approve.
+**None while the project is sunset.** The remaining shutdown tasks are administrative and tracked privately. A relaunch
+would start from the archive bundle and would have to redo Google's OAuth verification, since the project
+that held it is deleted.
 
 ---
 
@@ -81,24 +79,8 @@ Live commitments that no completed step discharged. Each is a thing that must ha
   a merchant-of-record service. Dormant since 8a: with no charge to a teacher there is no supply to tax, and
   the obligation returns in full the day a paid plan does. Kept here rather than deleted precisely because
   it is the kind of thing that gets reinstated silently.
-- **Outbound email is live, so a local `.env` carrying a real `RESEND_API_KEY` now sends real mail.** Against
-  a local database that is harmless. Against the production database it would drain that deployment's queue
-  to real recipients from a second process. Keep the key out of `server/.env` unless the database it points
-  at is local.
-- **DMARC is published at `p=none` and nothing reads the reports.** That is a complete answer rather than a
-  half-built one: `p=none` is what Gmail and Yahoo ask of a bulk sender, and tightening to `p=quarantine`
-  buys anti-spoofing the brand is not yet worth. Revisit only if the aggregate reports show a sender that
-  should not exist, which means someone has to read one.
 
 **Open operational items, none owned by a step.**
-
-- **The operator's desktop stays on Windows 10 past 2026-10-13**, when its security updates end, and its disk
-  is not encrypted. The move to Windows 11 is planned with no date set, and `ops/ADMIN_ACCOUNTS.md` records
-  the position as an accepted exception with physical control as the mitigation. The machine still holds the
-  KMS key and a full-access DigitalOcean token, which is what 8f's review of that credential would reduce.
-  Backup codes moved to removable media off the machine on 2026-09-11.
-- **The `ops/` documents carry their own review dates**: the register and the incident plan by 2027-09-10,
-  the next restore test by 2027-09-11, and the incident plan again after any incident.
 
 - **Drive push invalidation is unbuilt, and the working-set TTL must not be lengthened until it is proven in
   production.** This was 6d's last pair and remains unscheduled. `files.watch` needs a publicly reachable
@@ -106,10 +88,6 @@ Live commitments that no completed step discharged. Each is a thing that must ha
   Channel renewal is the part that fails silently if written and never exercised.
 - **No staging environment.** Defensible for a solo operation, but it should be a decision rather than an
   omission.
-- **Log retention** must be configured to the 30 days the privacy policy states. App Platform's built-in
-  retention is already well under that ceiling, so this probably needs no code and no aggregator; adding a
-  forwarding destination would satisfy it too, at the cost of a new subprocessor and therefore a paired
-  version bump and a consent re-prompt.
 - **Neither legal document has been reviewed by a lawyer.** Booked as part of 8c.
 - **A postal address for the operator** is owed in both documents, waiting on the PO box.
 - **The business-name registration expires on 2026-10-09 plus five years, 2031-10-09.** Renewal can be filed
@@ -130,11 +108,10 @@ Live commitments that no completed step discharged. Each is a thing that must ha
 _Only the latest entry, for quick context. Full history, every step in order, is in
 [HISTORY.md](HISTORY.md). When the next step completes, **replace** this section rather than appending to it._
 
-### Sunset decision and preparation
+### Sunset teardown
 
-The tester round produced two accounts with one session each and no repeat use, and the project was sunset.
-Four Phase 3 candidates were recorded, the portfolio record was built in `portfolio/`, and the teardown was
-queued in `SUNSET.md`. Full write-up in [HISTORY.md](HISTORY.md).
+Production was taken down on 2026-10-23 after the exit poll closed, and each deletion was verified
+afterwards. Full write-up in [HISTORY.md](HISTORY.md).
 
 ## Decisions Made
 
