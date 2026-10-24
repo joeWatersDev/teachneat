@@ -7,6 +7,7 @@
 - Surveyed 39 teachers and interviewed 4 to find where their non-teaching time went. 70% had missed an accommodation they should have provided, and about 74% spent more than five minutes a week on parent-communication logistics.
 - Wrote a product requirements document that set a baseline and a target for each feature, such as cutting a class-wide parent email from 15 to 30+ minutes to under 5.
 - Built and launched the full product on my own (React, TypeScript, Express, Postgres, Google Sheets and Gmail APIs) with 1,139 automated tests, and got it through Google's OAuth app verification.
+- Directed Claude Code, an AI coding agent, to write most of the code (277 of 287 commits) over about 65 sessions, using six planning documents as the spec, a project rules file loaded into every session, parallel sessions that reviewed each other's work, and tests and a pre-push check on every change.
 - Stored all student data in each teacher's own Google Sheet, with no copy kept on the app's servers, to make the app easier for school boards to approve.
 - Designed the free and Premium plans and built Stripe billing, then switched billing off when a legal review limited the launch to a free year in Ontario.
 - Tracked first use of each tool and monthly usage per account, and used that data alongside a feedback form to test the product with three teachers.
@@ -14,15 +15,19 @@
 
 ### Shorter version
 
-- Researched, built and launched Teachneat, a web app for teachers, from a 39-teacher survey and requirements document to a live product approved by Google.
+- Researched, built and launched Teachneat, a web app for teachers, from a 39-teacher survey and requirements document to a live product approved by Google, with Claude Code writing most of the code under my direction.
 - Tested it with teachers using account usage data and a feedback form, and found that the tools they rated highly were the ones they didn't use.
 - Shut it down on that evidence before taking on insurance, legal and tax costs.
 
 ## Profile summary
 
-Teachneat was a web app I researched, designed, built and ran for secondary school teachers. It kept one class list in the teacher's own Google Drive and used it for attendance, random groups, a name picker and personalized emails to families. It went live in August 2026 and passed Google's OAuth verification in September. When I tested it with colleagues, they rated the tools well but didn't use attendance or grouping, mainly because they already take attendance in the school's system. With the accommodation feature already removed after a legal review, I shut it down in October before taking on its ongoing costs. The case study covers the research, the main decisions, the testing and why I stopped.
+Teachneat was a web app I researched, designed, built and ran for secondary school teachers. It kept one class list in the teacher's own Google Drive and used it for attendance, random groups, a name picker and personalized emails to families. Claude Code wrote most of the code, and I worked as the product manager and tech lead: deciding what to build, writing the specs, reviewing its work and testing. It went live in August 2026 and passed Google's OAuth verification in September. When I tested it with colleagues, they rated the tools well but didn't use attendance or grouping, mainly because they already take attendance in the school's system. With the accommodation feature already removed after a legal review, I shut it down in October before taking on its ongoing costs. The case study covers the research, the main decisions, the testing and why I stopped.
 
 ## Interview stories
+
+### Building with an AI coding agent
+
+Claude Code wrote most of Teachneat's code, 277 of the 287 commits, over about 65 sessions. I kept six planning documents (implementation plan, design system, testing plan, data schema, API contract and approved dependencies) as the spec, and a hook made Claude ask before editing any of them. A rules file loaded into every session, and when something went wrong I added a rule so it wouldn't repeat, for example checking the last CI run before saying anything was live after a failed deploy went unnoticed. I ran sessions in parallel on separate parts of the app and used fresh sessions to review each other's work, including two security reviews. Every change had to pass the tests and a pre-push check, and I tested features and reviewed visual changes myself. The biggest lesson was that it made building so fast that I kept building past the point my evidence supported, which is part of why I would now test demand with a much smaller prototype first.
 
 ### Deciding what to build
 
@@ -45,5 +50,7 @@ The next steps were insurance, a legal review, a business mailing address, tax r
 **Why not keep running it for free?** Free still costs hosting and insurance, and comes with privacy obligations to every teacher whose class list passes through the server. Without regular use there was no route to the paid plan that would cover those costs.
 
 **What would make you come back to it?** A school board willing to approve the app for its teachers, and a way to avoid double entry, either syncing attendance with the school's student information system or importing class lists from Google Classroom or a CSV file. Both are written up in the project's backlog.
+
+**How much of the code did you write?** Very little directly. Claude Code wrote most of it from my specs and instructions, and my work was deciding what to build, defining how it should behave, reviewing changes, testing, and handling the operations and accounts myself.
 
 **What would you have needed to see to keep going?** Testers using the tools each week without being reminded. None of the accounts got to the point where a specific threshold would have mattered.

@@ -129,11 +129,11 @@ img { max-width: 100%; }
       <svg width="28" height="24" viewBox="0 0 28 24" aria-hidden="true"><rect x="2" y="4" width="6" height="18" rx="2" fill="#9aa0a6" transform="rotate(14 5 13)"/><rect x="10" y="3" width="6" height="18" rx="2" fill="#80868b" transform="rotate(14 13 12)"/><rect x="19" y="2" width="6" height="20" rx="2" fill="#ffab00"/></svg>
       <h1>Teachneat</h1>
     </div>
-    <p class="lede">Teachneat was a web app for secondary school teachers. It kept one class list in a Google Sheet on the teacher's own Drive and used it for attendance, random groups, a name picker and personalized emails to students and parents. I built it on my own between January and October 2026. It went live in August, passed Google's OAuth verification in September, and I shut it down in October after testing it with colleagues at my school.</p>
+    <p class="lede">Teachneat was a web app for secondary school teachers. It kept one class list in a Google Sheet on the teacher's own Drive and used it for attendance, random groups, a name picker and personalized emails to students and parents. I built it on my own between January and October 2026, with Claude Code writing most of the code under my direction. It went live in August, passed Google's OAuth verification in September, and I shut it down in October after testing it with colleagues at my school.</p>
     <dl class="facts">
       <div><dt>Role</dt><dd>Sole developer: research, design, development and operations</dd></div>
       <div><dt>Timeline</dt><dd>January to October 2026</dd></div>
-      <div><dt>Size of the build</dt><dd><span class="num">281</span> commits and <span class="num">1,139</span> automated tests</dd></div>
+      <div><dt>Size of the build</dt><dd><span class="num">287</span> commits, <span class="num">277</span> co-authored with Claude Code, and <span class="num">1,139</span> automated tests</dd></div>
       <div><dt>Outcome</dt><dd>Shut down after user testing</dd></div>
     </dl>
   </header>
@@ -191,6 +191,36 @@ img { max-width: 100%; }
       <p>Every tool works from the same class list. These screenshots are from a demo account with made-up students. Click any image to enlarge it.</p>
     </div>
     <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="col" aria-labelledby="s-ai">
+    <h2 id="s-ai">Building it with Claude</h2>
+    <div class="prose">
+      <p>I wrote very little of the code by hand. Claude Code, Anthropic's AI coding agent, wrote most of it over about <span class="num">65</span> working sessions, and <span class="num">277</span> of the <span class="num">287</span> commits are co-authored with it. My role was closer to a product manager and tech lead: I decided what to build, wrote down how it should work, reviewed what came back and tested it.</p>
+      <p>On a project with accounts, billing, encryption and a Google security review, a few practices kept that manageable.</p>
+    </div>
+    <div class="items">
+      <div class="item">
+        <h3>The planning documents were the spec</h3>
+        <p>Six documents covered the implementation plan, the design system, the testing plan, the spreadsheet schema, the API contract and a list of approved dependencies. Every session started by reading them, and a hook made Claude ask me before editing any of them, so changes to the spec were always my decision.</p>
+      </div>
+      <div class="item">
+        <h3>Standing rules in a project instructions file</h3>
+        <p>A CLAUDE.md file loaded into every session with the security, coding, writing and deployment rules. When something went wrong, the fix included a new rule there. For example, after a failed deploy went unnoticed, every session had to check the last CI run before saying anything was live.</p>
+      </div>
+      <div class="item">
+        <h3>Keeping the context small</h3>
+        <p>The record of what to do next grew to <span class="num">969</span> lines at one point, mostly repeated history, and every session had to read it. I moved completed work into a separate log and set a <span class="num">250</span>-line budget with a written procedure for updating the file, so each session started with only what it needed.</p>
+      </div>
+      <div class="item">
+        <h3>Parallel sessions that checked each other</h3>
+        <p>I often ran more than one session at a time on separate parts of the app, and used a fresh session to review another one's work before it was committed. The two security reviews worked the same way, with one session hardening the app and a second one, asked to act as a security analyst and penetration tester, going over it again.</p>
+      </div>
+      <div class="item">
+        <h3>Testing and review before anything shipped</h3>
+        <p>Every change had to pass the automated tests and the same checks CI ran, which a git hook enforced before any push. I tested features myself and reviewed every visual change before it went out, and the project rules required checking which version production was actually running after every deploy.</p>
+      </div>
+    </div>
   </section>
 
   <section class="col" aria-labelledby="s-decisions">
@@ -285,7 +315,7 @@ img { max-width: 100%; }
       </div>
       <div class="item">
         <h3>Test whether people come back before building for launch</h3>
-        <p>Accounts, billing, encryption key management and two security reviews were needed for a public launch, but not to find out whether teachers would use the tools. A simple prototype given to ten teachers for a month would have answered that much sooner and for much less.</p>
+        <p>Accounts, billing, encryption key management and two security reviews were needed for a public launch, but not to find out whether teachers would use the tools. A simple prototype given to ten teachers for a month would have answered that much sooner and for much less. Having Claude write the code made building fast and cheap, and that made it easy to keep building past the point the evidence supported.</p>
       </div>
       <div class="item">
         <h3>Work out how to reach teachers early</h3>
